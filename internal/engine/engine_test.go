@@ -123,3 +123,39 @@ func TestAttachListener(t *testing.T) {
 		t.Errorf("Expected no more players error from AttachListener, got nil")
 	}
 }
+
+func TestUnregisterListener(t *testing.T) {
+	testDb := cache.New(1*time.Minute, 2*time.Minute)
+	gE := New(testDb)
+	testGameID := "ABCDE"
+	testGame := newgame()
+	testGame.id = testGameID
+	//save game
+	gE.saveGame(testGame.id, testGame)
+
+	testChannel1 := make(chan GameState)
+	testChannel2 := make(chan GameState)
+
+	//attach listeners
+	//note: do not attach more than maxListenersCount
+	gE.AttachListener(testGameID, testChannel1)
+	gE.AttachListener(testGameID, testChannel2)
+
+	//ensure an error when gameID is invalid
+	invalidGameID := "12345"
+	err := gE.UnregisterListener(invalidGameID, testChannel2)
+	if err == nil {
+		t.Errorf("UnregisterListener expected game not found error, got nil")
+	}
+
+	//remove second listener
+	err = gE.UnregisterListener(testGameID, testChannel2)
+	if err != nil {
+		t.Errorf("UnregisterListener unexpected error %s", err)
+	}
+
+	g, _ := gE.getGame(testGameID)
+	if g.listeners.count != 1 {
+		t.Errorf("UnregisterListener fails, expected %d listeners after unregister, got %d", 1, g.listeners.count)
+	}
+}

@@ -69,9 +69,16 @@ func (gE GameEngine) AttachListener(id string, c chan GameState) error {
 //UnregisterListener removes a listener/channel from a game
 func (gE GameEngine) UnregisterListener(id string, c chan GameState) error {
 	//get the game for the id
-	_, err := gE.getGame(id)
+	game, err := gE.getGame(id)
 	if err != nil {
 		return err
+	}
+	for i := 0; i < game.listeners.count; i++ {
+		if game.listeners.channels[i] == c {
+			game.listeners.channels = append(game.listeners.channels[:i], game.listeners.channels[i+1:]...)
+			game.listeners.count--
+			break
+		}
 	}
 	return nil
 }
