@@ -20,6 +20,26 @@ func NewGameHandler(db *cache.Cache) http.HandlerFunc {
 		WriteBufferSize: 1024,
 	}
 
+	read := func(conn *websocket.Conn) chan int {
+		done := make(chan int)
+		go func() {
+			for {
+				_, p, err := conn.ReadMessage()
+				if err != nil {
+					//connection closed
+					done <- 1
+					break
+				}
+				fmt.Println(strings.TrimSpace(string(p)))
+			}
+		}()
+		return done //return done while the goroutine above is running
+	}
+
+	writeString := func(conn *websocket.Conn, msg string) {
+		conn.WriteMessage(websocket.TextMessage, []byte(msg))
+	}
+
 	return func(w http.ResponseWriter, r *http.Request) {
 		gameID := gE.StartNewGame()
 		log.Printf("handler.NewGame gameID is %s", gameID)
@@ -52,24 +72,4 @@ func NewGameHandler(db *cache.Cache) http.HandlerFunc {
 			}
 		}
 	}
-}
-
-func read(conn *websocket.Conn) chan int {
-	done := make(chan int)
-	go func() {
-		for {
-			_, p, err := conn.ReadMessage()
-			if err != nil {
-				//connection closed
-				done <- 1
-				break
-			}
-			fmt.Println(strings.TrimSpace(string(p)))
-		}
-	}()
-	return done //return done while the goroutine above is running
-}
-
-func writeString(conn *websocket.Conn, msg string) {
-	conn.WriteMessage(websocket.TextMessage, []byte(msg))
 }
