@@ -8,6 +8,14 @@ A tic-tac-toe multiplayer game server
 cd tttgameserver
 make
 ```
+To start the server on a port (e.g. 1025) other than the default (8080):
+```shell
+tttgameserver --port 1025
+```
+Run --help to see all server options
+```shell
+tttgameserver --help
+```
 
 ## API
 There are two endpoints of interest, the **New Game** and **Join Game** websocket endpoints.
