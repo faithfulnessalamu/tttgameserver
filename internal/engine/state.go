@@ -1,3 +1,4 @@
 package engine
 
-type gameState struct{}
+//GameState holds the state of an ongoing game
+type GameState struct{}
