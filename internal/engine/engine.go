@@ -9,6 +9,8 @@ import (
 var (
 	//ErrGameNotFound is returned when game requested is not in db
 	ErrGameNotFound = fmt.Errorf("Game with that ID does not exist")
+	//ErrNoMorePlayers is returned when trying to attach after reaching maxListenerCount
+	ErrNoMorePlayers = fmt.Errorf("No more players allowed")
 )
 
 //GameEngine handles game logic
@@ -39,8 +41,20 @@ func (gE GameEngine) getGame(id string) (*game, error) {
 	return game, nil
 }
 
-func (gE GameEngine) AttachListener(id string, c chan GameState) {
-
+//AttachListener adds a listener/channel to a game
+func (gE GameEngine) AttachListener(id string, c chan GameState) error {
+	//get the game for the id
+	game, err := gE.getGame(id)
+	if err != nil {
+		return err
+	}
+	//check if the slots are filled
+	if game.listeners.count == maxListenerCount {
+		return ErrNoMorePlayers
+	}
+	//attach
+	game.listeners.channels[count] = c
+	game.listeners.count++
 }
 
 func (gE GameEngine) saveGame(id string, g game) {
