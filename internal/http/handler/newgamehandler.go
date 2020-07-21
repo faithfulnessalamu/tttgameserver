@@ -48,7 +48,7 @@ func (nh NewGameHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	err = nh.gE.AttachListener(gameID, c) //game engine should use this channel to send updates
 	if err != nil {                       //no more players are allowed
 		//There should not be any error, this is the game creator
-		log.Fatal("handler.NewGame INVALID STATE: This is the game creator but %s", err)
+		log.Fatalf("handler.NewGame INVALID STATE: This is the game creator but %s", err)
 	}
 	defer nh.gE.UnregisterListener(gameID, c) //unregister listener when client disconnects
 
