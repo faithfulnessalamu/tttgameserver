@@ -31,9 +31,15 @@ func NewGameHandler(db *cache.Cache) http.HandlerFunc {
 		}
 
 		//deliver the gameID
-		conn.WriteMessage(websocket.TextMessage, []byte(gameID))
+		writeString(conn, gameID)
 		//register this player in the game engine
 		c := make(chan engine.GameState)
+		err = gE.AttachListener(gameID, c) //game engine should use this channel to send updates
+		if err != nil {                    //no more players are allowed
+			//There should not be any error, this is the game creator
+			log.Fatal("handler.NewGame INVALID STATE: This is the game creator but %s", err)
+		}
+
 		done := read(conn)
 		for {
 			select {
@@ -62,4 +68,8 @@ func read(conn *websocket.Conn) chan int {
 		}
 	}()
 	return done //return done while the goroutine above is running
+}
+
+func writeString(conn *websocket.Conn, msg string) {
+	conn.WriteMessage(websocket.TextMessage, []byte(msg))
 }
