@@ -79,3 +79,47 @@ func TestGetGameNotFound(t *testing.T) {
 		t.Error("GameEngine's getGame should return a not found error, got nil")
 	}
 }
+
+func TestAttachListener(t *testing.T) {
+	testDb := cache.New(1*time.Minute, 2*time.Minute)
+	gE := New(testDb)
+	fakeGameID := "HELLO FAKER"
+	testGameID := "ABCDE"
+	testGame := newgame()
+	testGame.id = testGameID
+	//save game
+	gE.saveGame(testGame.id, testGame)
+
+	testChannel := make(chan GameState)
+	//Try to attach listener to non-existent game
+	err := gE.AttachListener(fakeGameID, testChannel)
+	if err == nil {
+		t.Error("GameEngine's AttachListener should return a not found error, got nil")
+	}
+
+	//Try to attach listener to an ongoing game
+	err = gE.AttachListener(testGameID, testChannel)
+	if err != nil {
+		t.Errorf("GameEngine's AttachListener returns for valid id, error %s", err)
+	}
+
+	tg, _ := gE.getGame(testGameID)
+	if tg.listeners.count != 1 {
+		t.Errorf("AttachListener did not attach given channel, listener count is %d", tg.listeners.count)
+		return
+	}
+
+	if tg.listeners.channels[0] != testChannel {
+		t.Errorf("AttachListener attached wrong channel")
+	}
+
+	//add more listeners than allowed
+	var overErr error
+	for i := 0; i <= maxListenersCount; i++ {
+		newchan := make(chan GameState)
+		overErr = gE.AttachListener(testGameID, newchan)
+	}
+	if overErr == nil {
+		t.Errorf("Expected no more players error from AttachListener, got nil")
+	}
+}
