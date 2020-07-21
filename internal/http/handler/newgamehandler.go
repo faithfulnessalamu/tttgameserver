@@ -36,7 +36,8 @@ func (nh NewGameHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	//Upgrade the connection
 	conn, err := nh.upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Fatal("handler.NewGame ", err)
+		log.Println("handler.NewGame ", err)
+		return
 	}
 	nh.conn = conn
 	defer nh.conn.Close()
@@ -48,7 +49,8 @@ func (nh NewGameHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	err = nh.gE.AttachListener(gameID, c) //game engine should use this channel to send updates
 	if err != nil {                       //no more players are allowed
 		//There should not be any error, this is the game creator
-		log.Fatalf("handler.NewGame INVALID STATE: This is the game creator but %s", err)
+		log.Printf("handler.NewGame INVALID STATE: This is the game creator but %s", err)
+		return
 	}
 	defer nh.gE.UnregisterListener(gameID, c) //unregister listener when client disconnects
 
