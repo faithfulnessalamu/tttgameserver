@@ -17,10 +17,10 @@ func (gE GameEngine) StartNewGame() string {
 	game := newgame()
 	game.id = newGameID() //generate new game id
 	//save game
-	saveGame(game.id, game)
+	gE.saveGame(game.id, game)
 	return game.id
 }
 
-func saveGame(id string, g game) {
-
+func (gE GameEngine) saveGame(id string, g game) {
+	gE.db.Set(id, &g, cache.DefaultExpiration)
 }
