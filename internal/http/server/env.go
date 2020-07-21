@@ -3,7 +3,7 @@ package server
 import "net/http"
 
 type ServerEnv struct {
-	Port string
+	Port    string
 	Handler http.Handler
 }
 
