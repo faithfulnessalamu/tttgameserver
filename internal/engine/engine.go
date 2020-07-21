@@ -1,6 +1,15 @@
 package engine
 
-import "github.com/patrickmn/go-cache"
+import (
+	"fmt"
+
+	"github.com/patrickmn/go-cache"
+)
+
+var (
+	//ErrGameNotFound is returned when game requested is not in db
+	ErrGameNotFound = fmt.Errorf("Game with that ID does not exist")
+)
 
 //GameEngine handles game logic
 type GameEngine struct {
@@ -21,10 +30,13 @@ func (gE GameEngine) StartNewGame() string {
 	return game.id
 }
 
-func (gE GameEngine) getGame(id string) *game {
+func (gE GameEngine) getGame(id string) (*game, error) {
 	gInterface, found := gE.db.Get(id)
+	if !found {
+		return nil, ErrGameNotFound
+	}
 	game := gInterface.(*game)
-	return game
+	return game, nil
 }
 
 func (gE GameEngine) AttachListener(id string, c chan engine.GameState) {
