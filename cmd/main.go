@@ -10,12 +10,16 @@ import (
 	flag "github.com/spf13/pflag"
 	"github.com/thealamu/tttgameserver/internal/http/handler"
 	"github.com/thealamu/tttgameserver/internal/http/server"
+
+	"github.com/patrickmn/go-cache"
 )
 
 //flags
 var (
 	port string
 )
+
+var db = cache.New(cache.NoExpiration, cache.NoExpiration)
 
 func main() {
 	parseFlags()
