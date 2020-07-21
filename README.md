@@ -44,8 +44,8 @@ The game state is returned in JSON first after a successful connection and every
 Here is a sample of a game state:
 ```JSON
 {
-    id: "FpRTY"
-    lastUpdated: 1595365297
+    id: "FpRTY",
+    lastUpdated: 1595365297,
     data: {
         maxScore: 3,
         playerx: {
@@ -55,9 +55,12 @@ Here is a sample of a game state:
         },
         playero: {
             id: 1005
-            score: 2,
+            score: 3,
             active: true
         }
-    }
+    },
+    win: true,
+    winner: "playero",
+    level: "game"
 }
 ```
