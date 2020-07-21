@@ -76,7 +76,7 @@ func (gE GameEngine) dispatch(id string) {
 	if err != nil {
 		log.Println("gameEngine.dispatch could not dispatch game state", err)
 	}
-	for i, c := range game.listeners.channels {
+	for _, c := range game.listeners.channels {
 		c <- game.state
 	}
 }
