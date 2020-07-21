@@ -36,7 +36,7 @@ func (jh JoinGameHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	conn, err := jh.upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Fatal("handler.JoinGame ", err)
+		log.Println("handler.JoinGame ", err)
 	}
 	jh.conn = conn
 	defer jh.conn.Close()
