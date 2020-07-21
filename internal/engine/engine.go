@@ -2,6 +2,7 @@ package engine
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/patrickmn/go-cache"
 )
@@ -59,9 +60,23 @@ func (gE GameEngine) AttachListener(id string, c chan GameState) error {
 	game.listeners.channels[count] = c
 	game.listeners.count++
 
+	//dispatch state
+	go gE.dispatch(id)
+
 	return nil
 }
 
 func (gE GameEngine) saveGame(id string, g game) {
 	gE.db.Set(id, &g, cache.DefaultExpiration)
+}
+
+//Dispatch sends the game state to all game listeners
+func (gE GameEngine) dispatch(id string) {
+	game, err := gE.getGame(id)
+	if err != nil {
+		log.Println("gameEngine.dispatch could not dispatch game state", err)
+	}
+	for i, c := range game.listeners.channels {
+		c <- game.state
+	}
 }
