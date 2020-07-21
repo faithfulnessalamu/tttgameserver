@@ -5,7 +5,7 @@ import "github.com/dchest/uniuri"
 //game holds the state of an ongoing game
 type game struct {
 	id    string
-	state gameState
+	state GameState
 }
 
 //NewGame returns a new game
