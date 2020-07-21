@@ -21,6 +21,16 @@ func (gE GameEngine) StartNewGame() string {
 	return game.id
 }
 
+func (gE GameEngine) getGame(id string) *game {
+	gInterface, found := gE.db.Get(id)
+	game := gInterface.(*game)
+	return game
+}
+
+func (gE GameEngine) AttachListener(id string, c chan engine.GameState) {
+
+}
+
 func (gE GameEngine) saveGame(id string, g game) {
 	gE.db.Set(id, &g, cache.DefaultExpiration)
 }
