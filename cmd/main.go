@@ -3,9 +3,11 @@ package main
 import (
 	"context"
 	"log"
+	"time"
 
 	flag "github.com/spf13/pflag"
 	"github.com/thealamu/tttgameserver/internal/http/server"
+	"github.com/sethvargo/go-signalcontext"
 )
 
 //flags
@@ -20,12 +22,24 @@ func main() {
 	serverEnv := server.NewServerEnv()
 	serverEnv.Port = port
 
-	ctx := context.Background()
-	server.Run(ctx, serverEnv)
+	ctx, cancel := signalcontext.OnInterrupt()
+	defer cancel()	//call for cleanup
+
+	go server.Run(ctx, serverEnv)
+
+	<-ctx.Done()	//wait for CTRL+C
+
+	//stop the server
+	ctx = context.Background()
+	shutdownCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()	//call for cleanup
+	err := server.Shutdown(shutdownCtx)
+	if err != nil {
+		log.Fatal("main.Main ", err)
+	}
 }
 
 func parseFlags() {
 	flag.StringVarP(&port, "port", "p", "8080", "port to run server on")
-
 	flag.Parse()
 }
