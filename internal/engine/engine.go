@@ -48,13 +48,18 @@ func (gE GameEngine) AttachListener(id string, c chan GameState) error {
 	if err != nil {
 		return err
 	}
+
+	//get current game listeners count
+	count := game.listeners.count
 	//check if the slots are filled
-	if game.listeners.count == maxListenerCount {
+	if count == maxListenersCount {
 		return ErrNoMorePlayers
 	}
 	//attach
 	game.listeners.channels[count] = c
 	game.listeners.count++
+
+	return nil
 }
 
 func (gE GameEngine) saveGame(id string, g game) {
