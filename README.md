@@ -59,7 +59,7 @@ Here is a sample of a game state:
             active: true
         }
     },
-    board: [["o","","x"],["x","o",""],["","",""]],
+    board: [["o","","x"],["x","o",""],["","","o"]],
     win: true,
     winner: "playero",
 }
