@@ -49,6 +49,7 @@ func (jh JoinGameHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		jh.writeString(err.Error()) //write error string to conn
 		return                      //we can't go on
 	}
+	defer jh.gE.UnregisterListener(gameID, c) //unregister listener when client disconnects
 
 	done := jh.readMoves() //handle player actions
 	for {                  //listen for dispatch or client disconnection

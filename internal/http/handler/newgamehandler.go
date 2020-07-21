@@ -50,6 +50,7 @@ func (nh NewGameHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		//There should not be any error, this is the game creator
 		log.Fatal("handler.NewGame INVALID STATE: This is the game creator but %s", err)
 	}
+	defer nh.gE.UnregisterListener(gameID, c) //unregister listener when client disconnects
 
 	done := nh.readMoves() //handle player actions
 	for {                  //listen for dispatch or client disconnection
