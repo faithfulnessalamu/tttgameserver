@@ -44,6 +44,7 @@ func NewGameHandler(db *cache.Cache) http.HandlerFunc {
 		for {
 			select {
 			case gameState := <-c:
+				fmt.Println("Writing data")
 				conn.WriteJSON(gameState)
 			case <-done:
 				log.Println("Client disconnected")
@@ -51,7 +52,6 @@ func NewGameHandler(db *cache.Cache) http.HandlerFunc {
 			}
 		}
 	}
-
 }
 
 func read(conn *websocket.Conn) chan int {
