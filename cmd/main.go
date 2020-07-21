@@ -10,12 +10,16 @@ import (
 	flag "github.com/spf13/pflag"
 	"github.com/thealamu/tttgameserver/internal/http/handler"
 	"github.com/thealamu/tttgameserver/internal/http/server"
+
+	"github.com/patrickmn/go-cache"
 )
 
 //flags
 var (
 	port string
 )
+
+var db = cache.New(cache.NoExpiration, cache.NoExpiration)
 
 func main() {
 	parseFlags()
@@ -26,6 +30,8 @@ func main() {
 
 	router := mux.NewRouter()
 	router.HandleFunc("/", handler.HomeHandler)
+	router.HandleFunc("/newgame", handler.NewGameHandler(db))
+	router.HandleFunc("/joingame", handler.JoinGameHandler(db))
 	serverEnv.Handler = router
 
 	ctx, cancel := signalcontext.OnInterrupt()
