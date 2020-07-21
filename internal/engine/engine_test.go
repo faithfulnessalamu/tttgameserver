@@ -44,3 +44,38 @@ func TestSaveGame(t *testing.T) {
 		t.Errorf("GameEngine's saveGame saved with wrong ID: expected id: %s, got %s.", testGameID, retGame.id)
 	}
 }
+
+func TestGetGame(t *testing.T) {
+	testDb := cache.New(1*time.Minute, 2*time.Minute)
+	gE := New(testDb)
+	testGameID := "ABCDE"
+	testGame := newgame()
+	testGame.id = testGameID
+	//save game
+	gE.saveGame(testGame.id, testGame)
+	//try to get the game back
+	retGame, err := gE.getGame(testGameID)
+	if err != nil {
+		t.Errorf("GameEngine's getGame returns error: %s", err)
+		return //the remainder of the tests depend on a proper return value
+	}
+	if retGame.id != testGameID {
+		t.Errorf("GameEngine's getGame returns game with wrong ID: expected id: %s, got %s", testGameID, retGame.id)
+	}
+}
+
+func TestGetGameNotFound(t *testing.T) {
+	testDb := cache.New(1*time.Minute, 2*time.Minute)
+	gE := New(testDb)
+	fakeGameID := "HELLO FAKER"
+	testGameID := "ABCDE"
+	testGame := newgame()
+	testGame.id = testGameID
+	//save game
+	gE.saveGame(testGame.id, testGame)
+	//try to get the game back
+	_, err := gE.getGame(fakeGameID)
+	if err == nil {
+		t.Error("GameEngine's getGame should return a not found error, got nil")
+	}
+}

@@ -39,7 +39,7 @@ func (gE GameEngine) getGame(id string) (*game, error) {
 	return game, nil
 }
 
-func (gE GameEngine) AttachListener(id string, c chan engine.GameState) {
+func (gE GameEngine) AttachListener(id string, c chan GameState) {
 
 }
 
