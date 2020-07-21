@@ -1,9 +1,11 @@
 package main
 
 import (
+	"context"
 	"log"
 
 	flag "github.com/spf13/pflag"
+	"github.com/thealamu/tttgameserver/internal/http/server"
 )
 
 //flags
@@ -13,7 +15,13 @@ var (
 
 func main() {
 	parseFlags()
-	log.Printf("main.Main Port: %s", port)
+	log.Printf("main.Main port %s", port)
+
+	serverEnv := server.NewServerEnv()
+	serverEnv.Port = port
+
+	ctx := context.Background()
+	server.Run(ctx, serverEnv)
 }
 
 func parseFlags() {
