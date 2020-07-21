@@ -14,7 +14,7 @@ type game struct {
 //track the listeners for this game
 type listeners struct {
 	count    int
-	channels [maxListenersCount]chan GameState
+	channels []chan GameState
 }
 
 //NewGame returns a new game

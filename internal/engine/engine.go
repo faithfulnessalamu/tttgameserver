@@ -57,12 +57,22 @@ func (gE GameEngine) AttachListener(id string, c chan GameState) error {
 		return ErrNoMorePlayers
 	}
 	//attach
-	game.listeners.channels[count] = c
+	game.listeners.channels = append(game.listeners.channels, c)
 	game.listeners.count++
 
 	//dispatch state
 	go gE.dispatch(id)
 
+	return nil
+}
+
+//UnregisterListener removes a listener/channel from a game
+func (gE GameEngine) UnregisterListener(id string, c chan GameState) error {
+	//get the game for the id
+	_, err := gE.getGame(id)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
