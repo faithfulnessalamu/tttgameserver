@@ -16,6 +16,7 @@ func Shutdown(ctx context.Context) error {
 
 func Run(ctx context.Context, senv *ServerEnv) {
 	s.Addr = net.JoinHostPort("", senv.Port)
+	s.Handler = senv.Handler
 	log.Printf("server.Run starting server on %s", s.Addr)
 
 	err := http.ListenAndServe(s.Addr, s.Handler)
