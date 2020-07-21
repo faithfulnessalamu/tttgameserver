@@ -59,8 +59,8 @@ Here is a sample of a game state:
             active: true
         }
     },
+    board: [["o","","x"],["x","o",""],["","",""]],
     win: true,
     winner: "playero",
-    level: "game"
 }
 ```
