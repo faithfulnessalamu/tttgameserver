@@ -12,64 +12,73 @@ import (
 )
 
 //NewGameHandler handles creating a new game
-func NewGameHandler(db *cache.Cache) http.HandlerFunc {
-	gE := engine.New(db)
+type NewGameHandler struct {
+	gE       engine.GameEngine
+	upgrader websocket.Upgrader
+	conn     *websocket.Conn
+}
 
-	upgrader := websocket.Upgrader{
-		ReadBufferSize:  1024,
-		WriteBufferSize: 1024,
+//GetNewGameHandler creates a new NewGameHandler
+func GetNewGameHandler(db *cache.Cache) NewGameHandler {
+	return NewGameHandler{
+		gE: engine.New(db),
+		upgrader: websocket.Upgrader{
+			ReadBufferSize:  1024,
+			WriteBufferSize: 1024,
+		},
+	}
+}
+
+func (nh NewGameHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	gameID := nh.gE.StartNewGame()
+	log.Printf("handler.NewGame gameID is %s", gameID)
+
+	//Upgrade the connection
+	conn, err := nh.upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Fatal("handler.NewGame ", err)
+	}
+	nh.conn = conn
+	defer nh.conn.Close()
+
+	//deliver the gameID
+	nh.writeString(gameID)
+	//register this player in the game engine
+	c := make(chan engine.GameState)
+	err = nh.gE.AttachListener(gameID, c) //game engine should use this channel to send updates
+	if err != nil {                       //no more players are allowed
+		//There should not be any error, this is the game creator
+		log.Fatal("handler.NewGame INVALID STATE: This is the game creator but %s", err)
 	}
 
-	read := func(conn *websocket.Conn) chan int {
-		done := make(chan int)
-		go func() {
-			for {
-				_, p, err := conn.ReadMessage()
-				if err != nil {
-					//connection closed
-					done <- 1
-					break
-				}
-				fmt.Println(strings.TrimSpace(string(p)))
-			}
-		}()
-		return done //return done while the goroutine above is running
-	}
-
-	writeString := func(conn *websocket.Conn, msg string) {
-		conn.WriteMessage(websocket.TextMessage, []byte(msg))
-	}
-
-	return func(w http.ResponseWriter, r *http.Request) {
-		gameID := gE.StartNewGame()
-		log.Printf("handler.NewGame gameID is %s", gameID)
-
-		//Upgrade the connection
-		conn, err := upgrader.Upgrade(w, r, nil)
-		if err != nil {
-			log.Fatal("handler.NewGame ", err)
+	done := nh.readMoves() //handle player actions
+	for {                  //listen for dispatch or client disconnection
+		select {
+		case gameState := <-c:
+			conn.WriteJSON(gameState) //handle dispatch
+		case <-done:
+			log.Println("player disconnected")
+			return
 		}
+	}
+}
 
-		//deliver the gameID
-		writeString(conn, gameID)
-		//register this player in the game engine
-		c := make(chan engine.GameState)
-		err = gE.AttachListener(gameID, c) //game engine should use this channel to send updates
-		if err != nil {                    //no more players are allowed
-			//There should not be any error, this is the game creator
-			log.Fatal("handler.NewGame INVALID STATE: This is the game creator but %s", err)
-		}
-
-		done := read(conn)
+func (nh NewGameHandler) readMoves() chan int {
+	done := make(chan int)
+	go func() {
 		for {
-			select {
-			case gameState := <-c:
-				fmt.Println("Writing data")
-				conn.WriteJSON(gameState)
-			case <-done:
-				log.Println("Client disconnected")
-				return
+			_, p, err := nh.conn.ReadMessage()
+			if err != nil {
+				//connection closed
+				done <- 1
+				break
 			}
+			fmt.Println(strings.TrimSpace(string(p)))
 		}
-	}
+	}()
+	return done //return done while the goroutine above is running
+}
+
+func (nh NewGameHandler) writeString(msg string) {
+	nh.conn.WriteMessage(websocket.TextMessage, []byte(msg))
 }
