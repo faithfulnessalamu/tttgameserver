@@ -32,12 +32,34 @@ func NewGameHandler(db *cache.Cache) http.HandlerFunc {
 
 		//deliver the gameID
 		conn.WriteMessage(websocket.TextMessage, []byte(gameID))
+		//register this player in the game engine
+		c := make(chan engine.GameState)
+		done := read(conn)
+		for {
+			select {
+			case gameState := <-c:
+				conn.WriteJSON(gameState)
+			case <-done:
+				log.Println("Client disconnected")
+				return
+			}
+		}
+	}
+
+}
+
+func read(conn *websocket.Conn) chan int {
+	done := make(chan int)
+	go func() {
 		for {
 			_, p, err := conn.ReadMessage()
 			if err != nil {
-				log.Println(err)
+				//connection closed
+				done <- 1
+				break
 			}
 			fmt.Println(strings.TrimSpace(string(p)))
 		}
-	}
+	}()
+	return done //return done while the goroutine above is running
 }
