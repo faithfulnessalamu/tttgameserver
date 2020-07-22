@@ -42,14 +42,17 @@ func (jh JoinGameHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer jh.conn.Close()
 
 	//register this player in the game engine
-	c := make(chan engine.GameState)
-	err = jh.gE.AttachListener(gameID, c) //game engine should use this channel to send updates
+	c := make(chan engine.GameState) //game engine should use this channel to send updates
+	player, err := jh.gE.NewPlayer(gameID, c)
 	if err != nil {
 		log.Println(err)
 		jh.writeString(err.Error()) //write error string to conn
 		return                      //we can't go on
 	}
-	defer jh.gE.UnregisterListener(gameID, c) //unregister listener when client disconnects
+	defer jh.gE.RemovePlayer(gameID, player, c) //unregister when player disconnects
+
+	//TODO: deliver the gameID and Player Avatar
+	//nh.writeString(gameID)
 
 	done := jh.readMoves() //handle player actions
 	for {                  //listen for dispatch or client disconnection

@@ -69,10 +69,14 @@ func (gE GameEngine) RemovePlayer(gameID string, p Player, c chan GameState) err
 	for i, gamePlayer := range game.state.Data.Players {
 		if p.Avatar == gamePlayer.Avatar {
 			game.state.Data.Players = append(game.state.Data.Players[:i], game.state.Data.Players[i+1:]...)
+			game.returnAvatar(p.Avatar)
 		}
 	}
 	//unregister player
 	gE.unregisterListener(game, c)
+
+	//dispatch
+	go gE.dispatch(game)
 
 	return nil
 }
