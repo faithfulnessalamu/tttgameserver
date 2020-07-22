@@ -32,6 +32,28 @@ func (gE GameEngine) StartNewGame() string {
 	return game.id
 }
 
+//NewPlayer tries to attach a new player to the game
+func (gE GameEngine) NewPlayer(gameID string, c chan GameState) (Player, error) {
+	//get the game for the id
+	game, err := gE.getGame(gameID)
+	if err != nil {
+		return Player{}, err
+	}
+	//Check  if the slots are filled
+	if game.listeners.count == maxListenersCount {
+		return Player{}, ErrNoMorePlayers
+	}
+
+	//there is at least one slot available, get a new player
+	player := newPlayer()
+	player.Active = true
+
+	//attach the listener
+	gE.attachListener(game, c)
+
+	return player, nil
+}
+
 func (gE GameEngine) getGame(id string) (*game, error) {
 	gInterface, found := gE.db.Get(id)
 	if !found {
@@ -41,28 +63,14 @@ func (gE GameEngine) getGame(id string) (*game, error) {
 	return game, nil
 }
 
-//AttachListener adds a listener/channel to a game
-func (gE GameEngine) AttachListener(id string, c chan GameState) error {
-	//get the game for the id
-	game, err := gE.getGame(id)
-	if err != nil {
-		return err
-	}
-
-	//get current game listeners count
-	count := game.listeners.count
-	//check if the slots are filled
-	if count == maxListenersCount {
-		return ErrNoMorePlayers
-	}
+//attachListener adds a listener/channel to a game
+func (gE GameEngine) attachListener(g *game, c chan GameState) {
 	//attach
-	game.listeners.channels = append(game.listeners.channels, c)
-	game.listeners.count++
+	g.listeners.channels = append(g.listeners.channels, c)
+	g.listeners.count++
 
 	//dispatch state
-	go gE.dispatch(game)
-
-	return nil
+	go gE.dispatch(g)
 }
 
 //UnregisterListener removes a listener/channel from a game
