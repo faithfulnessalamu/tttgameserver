@@ -15,4 +15,10 @@ func TestIsValidMove(t *testing.T) {
 	if isValidMove(testBoard, inValidMove) != false {
 		t.Error("isValidMove, expected false for an invalid move, got true")
 	}
+
+	//check out of bounds
+	inValidMove = Move{row: 4, col: -3}
+	if isValidMove(testBoard, inValidMove) != false {
+		t.Error("isValidMove, expected false for an invalid move, got true")
+	}
 }
