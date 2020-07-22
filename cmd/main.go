@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"os"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -23,6 +24,9 @@ var db = cache.New(cache.NoExpiration, cache.NoExpiration)
 
 func main() {
 	parseFlags()
+	if port == "" {
+		port = os.Getenv("PORT") //default port is from the port env config
+	}
 	log.Printf("main.Main port %s", port)
 
 	serverEnv := server.NewServerEnv()
@@ -52,6 +56,6 @@ func main() {
 }
 
 func parseFlags() {
-	flag.StringVarP(&port, "port", "p", "8080", "port to run server on")
+	flag.StringVarP(&port, "port", "p", "", "port to run server on")
 	flag.Parse()
 }
