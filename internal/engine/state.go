@@ -11,13 +11,6 @@ type GameState struct {
 //Data holds current game data
 type Data struct {
 	MaxScore int    `json:"maxScore`
-	Playerx  Player `json:"playerx"`
-	Playero  Player `json:"playero"`
-}
-
-//Player represents a connected player
-type Player struct {
-	ID     int  `json:"id"`
-	Score  int  `json:"score"`
-	Active bool `json:"active"`
+	X        Player `json:"x"`
+	O        Player `json:"o"`
 }

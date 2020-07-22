@@ -3,6 +3,7 @@ package engine
 import "github.com/dchest/uniuri"
 
 const maxListenersCount = 2
+const defaultMaxScore = 3
 
 //game holds the state of an ongoing game
 type game struct {
