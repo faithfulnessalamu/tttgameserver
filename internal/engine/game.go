@@ -27,6 +27,7 @@ func newgame() game {
 	//init game state
 	g.state.Data.MaxScore = defaultMaxScore
 	g.avatarPool = append(g.avatarPool, []string{"x", "o"}...)
+	g.state.Turn = "o" //o plays first
 	return g
 }
 

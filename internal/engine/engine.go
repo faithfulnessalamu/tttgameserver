@@ -13,6 +13,8 @@ var (
 	ErrNoMorePlayers = fmt.Errorf("No more players allowed")
 	//ErrInvalidMove is returned when a move is invalid
 	ErrInvalidMove = fmt.Errorf("Invalid move")
+	//ErrNotYourTurn is returned when a move is for a player who has already played
+	ErrNotYourTurn = fmt.Errorf("Not your turn")
 )
 
 //GameEngine handles game states
@@ -67,18 +69,32 @@ func (gE GameEngine) MakeMove(gameID string, avt string, m Move) error {
 	if err != nil {
 		return err
 	}
+	//try to make the move only if it is their turn
+	if game.state.Turn != avt {
+		return ErrNotYourTurn
+	}
+
 	//check if move is valid
 	if !isValidMove(game.state.Board, m) {
 		return ErrInvalidMove
 	}
 
-	//make the move
 	effectMove(game.state.Board[:], avt, m)
+	gE.updateTurn(game)
 
 	//shout it to all
 	go gE.dispatch(game)
 
 	return nil
+}
+
+//updateTurn sets whose turn it is to play next
+func (gE GameEngine) updateTurn(g *game) {
+	if g.state.Turn == "x" {
+		g.state.Turn = "o"
+	} else if g.state.Turn == "o" {
+		g.state.Turn = "x"
+	}
 }
 
 //RemovePlayer removes a player from the game

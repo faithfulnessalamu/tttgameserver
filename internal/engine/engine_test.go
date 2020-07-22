@@ -121,3 +121,18 @@ func TestUnregisterListener(t *testing.T) {
 		t.Errorf("UnregisterListener fails, expected %d listeners after unregister, got %d", 1, testGame.listeners.count)
 	}
 }
+
+func TestUpdateTurn(t *testing.T) {
+	testGame := newgame() //first turn is o
+	gE := New(cache.New(10*time.Second, 15*time.Second))
+
+	gE.updateTurn(&testGame)
+	if testGame.state.Turn != "x" {
+		t.Errorf("updateTurn does not update turn in game state")
+	}
+
+	gE.updateTurn(&testGame)
+	if testGame.state.Turn != "o" {
+		t.Errorf("updateTurn does not update turn in game state")
+	}
+}
