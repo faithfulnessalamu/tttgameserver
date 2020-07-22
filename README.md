@@ -27,7 +27,7 @@ You can test this endpoint at the terminal using [websocat](https://github.com/v
 ```
 websocat ws://localhost:8080/ws/newgame
 ```
-On connection, the game server returns the game ID in the game state. Share this game ID with an opponent.
+On connection, the game server returns the game ID and avatar for the player. Share this game ID with an opponent and keep the avatar, as that is the only identification for either player on the connection.
 ### Join Game
 ```
 /ws/joingame?gameid={{GAME_ID}}
