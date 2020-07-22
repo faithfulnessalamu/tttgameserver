@@ -26,8 +26,7 @@ func newgame() game {
 	g := game{}
 	//init game state
 	g.state.Data.MaxScore = defaultMaxScore
-	g.avatarPool = append(g.avatarPool, "x")
-	g.avatarPool = append(g.avatarPool, "o")
+	g.avatarPool = append(g.avatarPool, []string{"x", "o"}...)
 	return g
 }
 
