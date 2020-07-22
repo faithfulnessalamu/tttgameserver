@@ -7,6 +7,27 @@ import (
 	"github.com/patrickmn/go-cache"
 )
 
+func TestCheckGameWon(t *testing.T) {
+	testGameID := "ABCDE"
+	testDb := cache.New(10*time.Second, 15*time.Second)
+	gE := New(testDb)
+	testGame := newgame()
+	testGame.id = testGameID
+
+	player := newPlayer()
+	player.Avatar = "x"
+	testGame.state.Data.Players = append(testGame.state.Data.Players, player)
+
+	gE.wonRound(&testGame, "x")
+	gE.wonRound(&testGame, "x")
+	gE.wonRound(&testGame, "x")
+
+	gE.checkGameWon(&testGame, "x")
+	if testGame.state.Win != true {
+		t.Error("checkGameWon, expected game win state set to true, got false")
+	}
+}
+
 func TestHasWonRound(t *testing.T) {
 	testGameID := "ABCDE"
 	testDb := cache.New(10*time.Second, 15*time.Second)

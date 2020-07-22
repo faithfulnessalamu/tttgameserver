@@ -15,6 +15,8 @@ var (
 	ErrInvalidMove = fmt.Errorf("Invalid move")
 	//ErrNotYourTurn is returned when a move is for a player who has already played
 	ErrNotYourTurn = fmt.Errorf("Not your turn")
+	//ErrGameAlreadyWon is returned when trying to move in a won game
+	ErrGameAlreadyWon = fmt.Errorf("Game already won")
 )
 
 //GameEngine handles game states
@@ -69,6 +71,12 @@ func (gE GameEngine) MakeMove(gameID string, avt string, m Move) error {
 	if err != nil {
 		return err
 	}
+
+	//only move on if game has not been won
+	if game.state.Win {
+		return ErrGameAlreadyWon
+	}
+
 	//try to make the move only if it is their turn
 	if game.state.Turn != avt {
 		return ErrNotYourTurn
@@ -86,13 +94,34 @@ func (gE GameEngine) MakeMove(gameID string, avt string, m Move) error {
 	if isRoundWon(game.state.Board) {
 		gE.wonRound(game, avt)
 		//check if the game has been won
-
+		gE.checkGameWon(game, avt)
+		//start a new round though
+		gE.newRound(game)
 	}
 
 	//shout it to all
 	go gE.dispatch(game)
 
 	return nil
+}
+
+func (gE GameEngine) newRound(g *game) {
+
+}
+
+func (gE GameEngine) checkGameWon(g *game, avt string) {
+	//get the player's score
+	pScore := 0
+	for _, p := range g.state.Data.Players {
+		if p.Avatar == avt {
+			pScore = p.Score
+		}
+	}
+	if pScore == defaultMaxScore {
+		//player has won the game
+		g.state.Win = true
+		g.state.Winner = avt
+	}
 }
 
 func (gE GameEngine) wonRound(g *game, avt string) {
