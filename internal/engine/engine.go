@@ -27,8 +27,6 @@ func New(db *cache.Cache) GameEngine {
 func (gE GameEngine) StartNewGame() string {
 	game := newgame()
 	game.id = newGameID() //generate new game id
-	//init game state
-	game.state.Data.MaxScore = defaultMaxScore
 	//save game
 	gE.saveGame(game.id, game)
 	return game.id

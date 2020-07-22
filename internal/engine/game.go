@@ -7,9 +7,10 @@ const defaultMaxScore = 3
 
 //game holds the state of an ongoing game
 type game struct {
-	id        string
-	state     GameState
-	listeners listeners
+	id         string
+	state      GameState
+	listeners  listeners
+	avatarPool []string
 }
 
 //track the listeners for this game
@@ -20,7 +21,12 @@ type listeners struct {
 
 //NewGame returns a new game
 func newgame() game {
-	return game{}
+	g := game{}
+	//init game state
+	g.state.Data.MaxScore = defaultMaxScore
+	g.avatarPool = append(g.avatarPool, "x")
+	g.avatarPool = append(g.avatarPool, "o")
+	return g
 }
 
 const idLength = 5
