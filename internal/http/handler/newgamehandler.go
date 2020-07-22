@@ -32,6 +32,18 @@ func GetNewGameHandler(db *cache.Cache) NewGameHandler {
 	}
 }
 
+func (nh NewGameHandler) doInit() {
+	initResponse := struct {
+		GameID string `json:"gameID"`
+		Avatar string `json:"avatar"`
+	}{
+		GameID: nh.gameID,
+		Avatar: nh.avatar,
+	}
+
+	nh.conn.WriteJSON(initResponse)
+}
+
 func (nh NewGameHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	//init logger
 	logger, err := zap.NewProduction()
@@ -70,10 +82,10 @@ func (nh NewGameHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	defer nh.gE.RemovePlayer(gameID, player, c) //unregister when player disconnects
 
-	//TODO: deliver the gameID and Player Avatar
+	//deliver the gameID and player avatar
 	nh.gameID = gameID
 	nh.avatar = player.Avatar
-	nh.writeString(gameID)
+	nh.doInit()
 
 	done := nh.readMoves() //handle player actions
 	for {                  //listen for dispatch or client disconnection
@@ -111,13 +123,6 @@ func (nh NewGameHandler) readMoves() chan int {
 				)
 				continue
 			}
-			//log the move
-			nh.logger.Info("Received move",
-				zap.String("gameID", nh.gameID),
-				zap.String("player", nh.avatar),
-				zap.Int("row", m.Row),
-				zap.Int("col", m.Col),
-			)
 			//try to do move
 			err = nh.gE.MakeMove(nh.gameID, nh.avatar, m)
 			if err != nil {
@@ -127,7 +132,15 @@ func (nh NewGameHandler) readMoves() chan int {
 					zap.String("err", err.Error()),
 				)
 				nh.writeString(err.Error())
+				continue
 			}
+			//log the move
+			nh.logger.Info("Made move",
+				zap.String("gameID", nh.gameID),
+				zap.String("player", nh.avatar),
+				zap.Int("row", m.Row),
+				zap.Int("col", m.Col),
+			)
 		}
 	}()
 	return done //return done while the goroutine above is running

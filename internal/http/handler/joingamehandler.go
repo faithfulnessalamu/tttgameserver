@@ -32,6 +32,18 @@ func GetJoinGameHandler(db *cache.Cache) JoinGameHandler {
 	}
 }
 
+func (jh JoinGameHandler) doInit() {
+	initResponse := struct {
+		GameID string `json:"gameID"`
+		Avatar string `json:"avatar"`
+	}{
+		GameID: jh.gameID,
+		Avatar: jh.avatar,
+	}
+
+	jh.conn.WriteJSON(initResponse)
+}
+
 func (jh JoinGameHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	//create logger
 	logger, err := zap.NewProduction()
@@ -69,12 +81,16 @@ func (jh JoinGameHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		jh.writeString(err.Error()) //write error string to conn
 		return                      //we can't go on
 	}
+	jh.logger.Info("Player joined game",
+		zap.String("gameID", gameID),
+		zap.String("player", player.Avatar),
+	)
 	defer jh.gE.RemovePlayer(gameID, player, c) //unregister when player disconnects
 
-	//TODO: deliver the gameID and Player Avatar
+	//deliver the gameID and Player Avatar
 	jh.gameID = gameID
 	jh.avatar = player.Avatar
-	//nh.writeString(gameID)
+	jh.doInit()
 
 	done := jh.readMoves() //handle player actions
 	for {                  //listen for dispatch or client disconnection
@@ -112,13 +128,6 @@ func (jh JoinGameHandler) readMoves() chan int {
 				)
 				continue
 			}
-			//log the move
-			jh.logger.Info("Received move",
-				zap.String("gameID", jh.gameID),
-				zap.String("player", jh.avatar),
-				zap.Int("row", m.Row),
-				zap.Int("col", m.Col),
-			)
 			//try to do move
 			err = jh.gE.MakeMove(jh.gameID, jh.avatar, m)
 			if err != nil {
@@ -128,7 +137,15 @@ func (jh JoinGameHandler) readMoves() chan int {
 					zap.String("err", err.Error()),
 				)
 				jh.writeString(err.Error())
+				continue
 			}
+			//log the move
+			jh.logger.Info("Made move",
+				zap.String("gameID", jh.gameID),
+				zap.String("player", jh.avatar),
+				zap.Int("row", m.Row),
+				zap.Int("col", m.Col),
+			)
 		}
 	}()
 	return done //return done while the goroutine above is running
