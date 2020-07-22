@@ -71,4 +71,13 @@ func TestNewPlayer(t *testing.T) {
 	if len(g.state.Data.Players) != 1 {
 		t.Errorf("NewPlayer does not insert a new player, expected length %d, got %d", 1, len(g.state.Data.Players))
 	}
+
+	//Test adding more than two players
+	anotherChan := make(chan GameState)
+	yetAnotherChan := make(chan GameState)
+	_, err = gE.NewPlayer(testGameID, anotherChan)
+	_, err = gE.NewPlayer(testGameID, yetAnotherChan)
+	if err == nil {
+		t.Errorf("NewPlayer expected error no more players allowed, got nil")
+	}
 }
