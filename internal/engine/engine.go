@@ -46,6 +46,7 @@ func (gE GameEngine) NewPlayer(gameID string, c chan GameState) (Player, error) 
 
 	//there is at least one slot available, get a new player
 	player := newPlayer()
+	player.Active = true
 	// add player to game
 	//get an avatar from the pool
 	player.Avatar = game.nextAvatar()
