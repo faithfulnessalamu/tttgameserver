@@ -71,9 +71,7 @@ A tic-tac-toe board can be sufficiently represented as a 3 by 3 matrix, a 'move'
 Here is a sample of a move:
 ```JSON
 {
-    move:{
-        row: 0,
-        col: 1
-    }
+    row: 0,
+    col: 1
 }
 ```
