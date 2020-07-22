@@ -1,5 +1,10 @@
 package engine
 
+//effect a move
+func effectMove(board [][3]string, avt string, m Move) {
+	board[m.Row][m.Col] = avt
+}
+
 //check if a move is valid
 func isValidMove(board [3][3]string, m Move) bool {
 	//a move is invalid if there is a player on the position

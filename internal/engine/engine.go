@@ -11,6 +11,8 @@ var (
 	ErrGameNotFound = fmt.Errorf("Game with that ID does not exist")
 	//ErrNoMorePlayers is returned when trying to add players after reaching maxListenerCount
 	ErrNoMorePlayers = fmt.Errorf("No more players allowed")
+	//ErrInvalidMove is returned when a move is invalid
+	ErrInvalidMove = fmt.Errorf("Invalid move")
 )
 
 //GameEngine handles game states
@@ -56,6 +58,27 @@ func (gE GameEngine) NewPlayer(gameID string, c chan GameState) (Player, error) 
 	gE.attachListener(game, c)
 
 	return player, nil
+}
+
+//MakeMove makes a move
+func (gE GameEngine) MakeMove(gameID string, avt string, m Move) error {
+	//get game for the id
+	game, err := gE.getGame(gameID)
+	if err != nil {
+		return err
+	}
+	//check if move is valid
+	if !isValidMove(game.state.Board, m) {
+		return ErrInvalidMove
+	}
+
+	//make the move
+	effectMove(game.state.Board[:], avt, m)
+
+	//shout it to all
+	go gE.dispatch(game)
+
+	return nil
 }
 
 //RemovePlayer removes a player from the game
