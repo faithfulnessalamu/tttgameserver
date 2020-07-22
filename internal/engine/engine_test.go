@@ -136,3 +136,28 @@ func TestUpdateTurn(t *testing.T) {
 		t.Errorf("updateTurn does not update turn in game state")
 	}
 }
+
+func TestNewRound(t *testing.T) {
+	testGameID := "ABCDE"
+	testDb := cache.New(10*time.Second, 15*time.Second)
+	gE := New(testDb)
+	testGame := newgame()
+	testGame.id = testGameID
+
+	player := newPlayer()
+	player.Avatar = "x"
+	testGame.state.Data.Players = append(testGame.state.Data.Players, player)
+
+	//play something
+	testGame.state.Board[0][0] = "x"
+
+	gE.newRound(&testGame)
+
+	if testGame.state.Board != [3][3]string{} {
+		t.Errorf("newRound, expected board to be reset, it is not")
+	}
+
+	if testGame.state.Data.Players[0].Score != 0 {
+		t.Errorf("newRound, expected player scores to be reset")
+	}
+}

@@ -106,7 +106,14 @@ func (gE GameEngine) MakeMove(gameID string, avt string, m Move) error {
 }
 
 func (gE GameEngine) newRound(g *game) {
+	//reset board
+	emptyBoard := [3][3]string{}
+	g.state.Board = emptyBoard
 
+	//reset player scores
+	for i := range g.state.Data.Players {
+		g.state.Data.Players[i].Score = 0
+	}
 }
 
 func (gE GameEngine) checkGameWon(g *game, avt string) {
