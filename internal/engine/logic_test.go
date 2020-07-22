@@ -2,6 +2,33 @@ package engine
 
 import "testing"
 
+func TestIsRoundWon(t *testing.T) {
+	testBoardCol := [3][3]string{{"o", "", ""}, {"o", "x", ""}, {"o", "", "x"}}
+	if !isRoundWon(testBoardCol) {
+		t.Error("isRoundWon, expected true got false")
+	}
+
+	testBoardRow := [3][3]string{{"o", "o", "o"}, {"x", "x", ""}, {"", "", ""}}
+	if !isRoundWon(testBoardRow) {
+		t.Error("isRoundWon, expected true got false")
+	}
+
+	testBoardDiagDown := [3][3]string{{"o", "x", ""}, {"x", "o", ""}, {"", "", "o"}}
+	if !isRoundWon(testBoardDiagDown) {
+		t.Error("isRoundWon, expected true got false")
+	}
+
+	testBoardDiagUp := [3][3]string{{"", "x", "o"}, {"x", "o", ""}, {"o", "", ""}}
+	if !isRoundWon(testBoardDiagUp) {
+		t.Error("isRoundWon, expected true got false")
+	}
+
+	testBoardFalse := [3][3]string{{"", "x", "o"}, {"x", "o", "o"}, {"", "", ""}}
+	if isRoundWon(testBoardFalse) {
+		t.Error("isRoundWon, expected false, got true")
+	}
+}
+
 func TestEffectMove(t *testing.T) {
 	testBoard := [3][3]string{{"o", "", ""}, {"", "x", ""}, {"o", "", ""}}
 	validMove := Move{Row: 1, Col: 2}
