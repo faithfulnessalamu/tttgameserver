@@ -46,19 +46,21 @@ Here is a sample of a game state:
 {
     data: {
         maxScore: 3,
-        playerx: {
-            id: 1000
-            score: 2,
-            active: true
-        },
-        playero: {
-            id: 1005
-            score: 3,
-            active: true
-        }
+        players: [
+            {
+                avatar: "o",
+                score: 2,
+                active: true
+            }, 
+            {
+                avatar: "x",
+                score: 3,
+                active: true
+            }
+        ],
     },
     board: [["o","","x"],["x","o",""],["","","o"]],
     win: true,
-    winner: "playero",
+    winner: "o",
 }
 ```
