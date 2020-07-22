@@ -82,10 +82,27 @@ func (gE GameEngine) MakeMove(gameID string, avt string, m Move) error {
 	effectMove(game.state.Board[:], avt, m)
 	gE.updateTurn(game)
 
+	//check if the round has been won
+	if isRoundWon(game.state.Board) {
+		gE.wonRound(game, avt)
+		//check if the game has been won
+
+	}
+
 	//shout it to all
 	go gE.dispatch(game)
 
 	return nil
+}
+
+func (gE GameEngine) wonRound(g *game, avt string) {
+	//increate player's score
+	for i, p := range g.state.Data.Players {
+		if p.Avatar == avt {
+			g.state.Data.Players[i].Score++
+			break
+		}
+	}
 }
 
 //updateTurn sets whose turn it is to play next

@@ -7,6 +7,24 @@ import (
 	"github.com/patrickmn/go-cache"
 )
 
+func TestHasWonRound(t *testing.T) {
+	testGameID := "ABCDE"
+	testDb := cache.New(10*time.Second, 15*time.Second)
+	gE := New(testDb)
+	testGame := newgame()
+	testGame.id = testGameID
+
+	player := newPlayer()
+	player.Avatar = "x"
+	testGame.state.Data.Players = append(testGame.state.Data.Players, player)
+
+	gE.wonRound(&testGame, "x")
+	newScore := testGame.state.Data.Players[0].Score
+	if newScore != 1 {
+		t.Errorf("wonRound does not increase player's score by 1, expected %d, got %d", 1, newScore)
+	}
+}
+
 func TestRemovePlayer(t *testing.T) {
 	testGameID := "ABCDE"
 	testChan := make(chan GameState)
