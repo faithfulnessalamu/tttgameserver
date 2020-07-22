@@ -49,12 +49,12 @@ Here is a sample of a game state:
         players: [
             {
                 avatar: "o",
-                score: 2,
+                score: 3,
                 active: true
             }, 
             {
                 avatar: "x",
-                score: 3,
+                score: 2,
                 active: true
             }
         ],
@@ -62,6 +62,7 @@ Here is a sample of a game state:
     board: [["o","","x"],["x","o",""],["","","o"]],
     win: true,
     winner: "o",
+    turn: "o"
 }
 ```
 

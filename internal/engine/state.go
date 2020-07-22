@@ -6,6 +6,7 @@ type GameState struct {
 	Board  [3][3]string `json:"board"`
 	Win    bool         `json:"win"`
 	Winner string       `json:"winner"`
+	Turn   string       `json:"turn"` //whose turn is it?
 }
 
 //Data holds current game data
