@@ -28,7 +28,7 @@ func TestCheckGameWon(t *testing.T) {
 	}
 }
 
-func TestHasWonRound(t *testing.T) {
+func TestWonRound(t *testing.T) {
 	testGameID := "ABCDE"
 	testDb := cache.New(10*time.Second, 15*time.Second)
 	gE := New(testDb)

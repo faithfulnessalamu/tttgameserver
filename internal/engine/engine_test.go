@@ -144,10 +144,6 @@ func TestNewRound(t *testing.T) {
 	testGame := newgame()
 	testGame.id = testGameID
 
-	player := newPlayer()
-	player.Avatar = "x"
-	testGame.state.Data.Players = append(testGame.state.Data.Players, player)
-
 	//play something
 	testGame.state.Board[0][0] = "x"
 
@@ -155,9 +151,5 @@ func TestNewRound(t *testing.T) {
 
 	if testGame.state.Board != [3][3]string{} {
 		t.Errorf("newRound, expected board to be reset, it is not")
-	}
-
-	if testGame.state.Data.Players[0].Score != 0 {
-		t.Errorf("newRound, expected player scores to be reset")
 	}
 }
