@@ -36,11 +36,11 @@ func (g *game) returnAvatar(avt string) {
 
 func (g *game) nextAvatar() string {
 	l := len(g.avatarPool)
-	highIndex := l - 1
-	nAv := g.avatarPool[highIndex]
+	j := l - 1
+	avt := g.avatarPool[j]
 	//remove this avatar from the pool
-	g.avatarPool = append(g.avatarPool[:highIndex], g.avatarPool[highIndex+1:]...)
-	return nAv
+	g.avatarPool = append(g.avatarPool[:j], g.avatarPool[j+1:]...)
+	return avt
 }
 
 const idLength = 5

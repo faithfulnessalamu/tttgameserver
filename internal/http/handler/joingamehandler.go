@@ -60,7 +60,7 @@ func (jh JoinGameHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		case gameState := <-c:
 			conn.WriteJSON(gameState) //handle dispatch
 		case <-done:
-			log.Println("player disconnected")
+			log.Println("handler.JoinGame player disconnected")
 			return
 		}
 	}

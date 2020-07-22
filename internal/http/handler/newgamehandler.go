@@ -62,7 +62,7 @@ func (nh NewGameHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		case gameState := <-c:
 			conn.WriteJSON(gameState) //handle dispatch
 		case <-done:
-			log.Println("player disconnected")
+			log.Println("handler.NewGame player disconnected")
 			return
 		}
 	}
