@@ -73,21 +73,15 @@ func (gE GameEngine) attachListener(g *game, c chan GameState) {
 	go gE.dispatch(g)
 }
 
-//UnregisterListener removes a listener/channel from a game
-func (gE GameEngine) UnregisterListener(id string, c chan GameState) error {
-	//get the game for the id
-	game, err := gE.getGame(id)
-	if err != nil {
-		return err
-	}
-	for i := 0; i < game.listeners.count; i++ {
-		if game.listeners.channels[i] == c {
-			game.listeners.channels = append(game.listeners.channels[:i], game.listeners.channels[i+1:]...)
-			game.listeners.count--
+//unregisterListener removes a listener/channel from a game
+func (gE GameEngine) unregisterListener(g *game, c chan GameState) {
+	for i := 0; i < g.listeners.count; i++ {
+		if g.listeners.channels[i] == c {
+			g.listeners.channels = append(g.listeners.channels[:i], g.listeners.channels[i+1:]...)
+			g.listeners.count--
 			break
 		}
 	}
-	return nil
 }
 
 func (gE GameEngine) saveGame(id string, g game) {

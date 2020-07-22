@@ -83,6 +83,24 @@ func TestGetGameNotFound(t *testing.T) {
 func TestAttachListener(t *testing.T) {
 	testDb := cache.New(1*time.Minute, 2*time.Minute)
 	gE := New(testDb)
+	testGameID := "ABCDE"
+	testGame := newgame()
+	testGame.id = testGameID
+	//save game
+	gE.saveGame(testGame.id, testGame)
+
+	testChannel := make(chan GameState)
+	gE.attachListener(&testGame, testChannel)
+
+	if testGame.listeners.count != 1 {
+		t.Errorf("AttachListener does not attach, expected %d listeners, got %d", 1, testGame.listeners.count)
+	}
+}
+
+/*
+func TestAttachListener(t *testing.T) {
+	testDb := cache.New(1*time.Minute, 2*time.Minute)
+	gE := New(testDb)
 	fakeGameID := "HELLO FAKER"
 	testGameID := "ABCDE"
 	testGame := newgame()
@@ -123,6 +141,7 @@ func TestAttachListener(t *testing.T) {
 		t.Errorf("Expected no more players error from AttachListener, got nil")
 	}
 }
+*/
 
 func TestUnregisterListener(t *testing.T) {
 	testDb := cache.New(1*time.Minute, 2*time.Minute)
@@ -138,24 +157,13 @@ func TestUnregisterListener(t *testing.T) {
 
 	//attach listeners
 	//note: do not attach more than maxListenersCount
-	gE.AttachListener(testGameID, testChannel1)
-	gE.AttachListener(testGameID, testChannel2)
-
-	//ensure an error when gameID is invalid
-	invalidGameID := "12345"
-	err := gE.UnregisterListener(invalidGameID, testChannel2)
-	if err == nil {
-		t.Errorf("UnregisterListener expected game not found error, got nil")
-	}
+	gE.attachListener(&testGame, testChannel1)
+	gE.attachListener(&testGame, testChannel2)
 
 	//remove second listener
-	err = gE.UnregisterListener(testGameID, testChannel2)
-	if err != nil {
-		t.Errorf("UnregisterListener unexpected error %s", err)
-	}
+	gE.unregisterListener(&testGame, testChannel2)
 
-	g, _ := gE.getGame(testGameID)
-	if g.listeners.count != 1 {
-		t.Errorf("UnregisterListener fails, expected %d listeners after unregister, got %d", 1, g.listeners.count)
+	if testGame.listeners.count != 1 {
+		t.Errorf("UnregisterListener fails, expected %d listeners after unregister, got %d", 1, testGame.listeners.count)
 	}
 }
