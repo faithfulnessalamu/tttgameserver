@@ -1,10 +1,9 @@
 package handler
 
 import (
-	"fmt"
+	"encoding/json"
 	"log"
 	"net/http"
-	"strings"
 
 	"github.com/gorilla/websocket"
 	"github.com/patrickmn/go-cache"
@@ -16,6 +15,8 @@ type NewGameHandler struct {
 	gE       engine.GameEngine
 	upgrader websocket.Upgrader
 	conn     *websocket.Conn
+	gameID   string
+	avatar   string
 }
 
 //GetNewGameHandler creates a new NewGameHandler
@@ -54,6 +55,8 @@ func (nh NewGameHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer nh.gE.RemovePlayer(gameID, player, c) //unregister when player disconnects
 
 	//TODO: deliver the gameID and Player Avatar
+	nh.gameID = gameID
+	nh.avatar = player.Avatar
 	nh.writeString(gameID)
 
 	done := nh.readMoves() //handle player actions
@@ -78,7 +81,19 @@ func (nh NewGameHandler) readMoves() chan int {
 				done <- 1
 				break
 			}
-			fmt.Println(strings.TrimSpace(string(p)))
+			//handle move
+			var m engine.Move
+			err = json.Unmarshal(p, &m)
+			if err != nil {
+				log.Printf("handler.readMoves %s", err)
+				continue
+			}
+			//try to do move
+			err = nh.gE.MakeMove(nh.gameID, nh.avatar, m)
+			if err != nil {
+				log.Printf("handler.readMoves %s", err)
+				nh.writeString(err.Error())
+			}
 		}
 	}()
 	return done //return done while the goroutine above is running
