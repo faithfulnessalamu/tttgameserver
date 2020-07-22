@@ -47,11 +47,34 @@ func (gE GameEngine) NewPlayer(gameID string, c chan GameState) (Player, error) 
 	//there is at least one slot available, get a new player
 	player := newPlayer()
 	player.Active = true
+	// add player to game
+	//get an avatar from the pool
+	player.Avatar = game.nextAvatar()
+	game.state.Data.Players = append(game.state.Data.Players, player)
 
 	//attach the listener
 	gE.attachListener(game, c)
 
 	return player, nil
+}
+
+//RemovePlayer removes a player from the game
+func (gE GameEngine) RemovePlayer(gameID string, p Player, c chan GameState) error {
+	//get the game for the id
+	game, err := gE.getGame(gameID)
+	if err != nil {
+		return err
+	}
+	//remove player from game
+	for i, gamePlayer := range game.state.Data.Players {
+		if p.Avatar == gamePlayer.Avatar {
+			game.state.Data.Players = append(game.state.Data.Players[:i], game.state.Data.Players[i+1:]...)
+		}
+	}
+	//unregister player
+	gE.unregisterListener(game, c)
+
+	return nil
 }
 
 func (gE GameEngine) getGame(id string) (*game, error) {

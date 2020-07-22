@@ -29,6 +29,17 @@ func newgame() game {
 	return g
 }
 
+func (g *game) returnAvatar(avt string) {
+	g.avatarPool = append(g.avatarPool, avt)
+}
+
+func (g *game) nextAvatar() string {
+	l := len(g.avatarPool)
+	nAv := g.avatarPool[l-1]
+	g.avatarPool = g.avatarPool[:l]
+	return nAv
+}
+
 const idLength = 5
 
 func newGameID() string {
