@@ -1,10 +1,9 @@
 package handler
 
 import (
-	"fmt"
+	"encoding/json"
 	"log"
 	"net/http"
-	"strings"
 
 	"github.com/gorilla/websocket"
 	"github.com/patrickmn/go-cache"
@@ -16,6 +15,8 @@ type NewGameHandler struct {
 	gE       engine.GameEngine
 	upgrader websocket.Upgrader
 	conn     *websocket.Conn
+	gameID   string
+	avatar   string
 }
 
 //GetNewGameHandler creates a new NewGameHandler
@@ -42,17 +43,21 @@ func (nh NewGameHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	nh.conn = conn
 	defer nh.conn.Close()
 
-	//deliver the gameID
-	nh.writeString(gameID)
 	//register this player in the game engine
-	c := make(chan engine.GameState)
-	err = nh.gE.AttachListener(gameID, c) //game engine should use this channel to send updates
-	if err != nil {                       //no more players are allowed
+	c := make(chan engine.GameState) //game engine should use this channel to send updates
+	//new player
+	player, err := nh.gE.NewPlayer(gameID, c)
+	if err != nil {
 		//There should not be any error, this is the game creator
 		log.Printf("handler.NewGame INVALID STATE: This is the game creator but %s", err)
 		return
 	}
-	defer nh.gE.UnregisterListener(gameID, c) //unregister listener when client disconnects
+	defer nh.gE.RemovePlayer(gameID, player, c) //unregister when player disconnects
+
+	//TODO: deliver the gameID and Player Avatar
+	nh.gameID = gameID
+	nh.avatar = player.Avatar
+	nh.writeString(gameID)
 
 	done := nh.readMoves() //handle player actions
 	for {                  //listen for dispatch or client disconnection
@@ -60,7 +65,7 @@ func (nh NewGameHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		case gameState := <-c:
 			conn.WriteJSON(gameState) //handle dispatch
 		case <-done:
-			log.Println("player disconnected")
+			log.Println("handler.NewGame player disconnected")
 			return
 		}
 	}
@@ -76,7 +81,19 @@ func (nh NewGameHandler) readMoves() chan int {
 				done <- 1
 				break
 			}
-			fmt.Println(strings.TrimSpace(string(p)))
+			//handle move
+			var m engine.Move
+			err = json.Unmarshal(p, &m)
+			if err != nil {
+				log.Printf("handler.readMoves %s", err)
+				continue
+			}
+			//try to do move
+			err = nh.gE.MakeMove(nh.gameID, nh.avatar, m)
+			if err != nil {
+				log.Printf("handler.readMoves %s", err)
+				nh.writeString(err.Error())
+			}
 		}
 	}()
 	return done //return done while the goroutine above is running

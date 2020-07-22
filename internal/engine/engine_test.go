@@ -83,7 +83,6 @@ func TestGetGameNotFound(t *testing.T) {
 func TestAttachListener(t *testing.T) {
 	testDb := cache.New(1*time.Minute, 2*time.Minute)
 	gE := New(testDb)
-	fakeGameID := "HELLO FAKER"
 	testGameID := "ABCDE"
 	testGame := newgame()
 	testGame.id = testGameID
@@ -91,36 +90,10 @@ func TestAttachListener(t *testing.T) {
 	gE.saveGame(testGame.id, testGame)
 
 	testChannel := make(chan GameState)
-	//Try to attach listener to non-existent game
-	err := gE.AttachListener(fakeGameID, testChannel)
-	if err == nil {
-		t.Error("GameEngine's AttachListener should return a not found error, got nil")
-	}
+	gE.attachListener(&testGame, testChannel)
 
-	//Try to attach listener to an ongoing game
-	err = gE.AttachListener(testGameID, testChannel)
-	if err != nil {
-		t.Errorf("GameEngine's AttachListener returns for valid id, error %s", err)
-	}
-
-	tg, _ := gE.getGame(testGameID)
-	if tg.listeners.count != 1 {
-		t.Errorf("AttachListener did not attach given channel, listener count is %d", tg.listeners.count)
-		return
-	}
-
-	if tg.listeners.channels[0] != testChannel {
-		t.Errorf("AttachListener attached wrong channel")
-	}
-
-	//add more listeners than allowed
-	var overErr error
-	for i := 0; i <= maxListenersCount; i++ {
-		newchan := make(chan GameState)
-		overErr = gE.AttachListener(testGameID, newchan)
-	}
-	if overErr == nil {
-		t.Errorf("Expected no more players error from AttachListener, got nil")
+	if testGame.listeners.count != 1 {
+		t.Errorf("AttachListener does not attach, expected %d listeners, got %d", 1, testGame.listeners.count)
 	}
 }
 
@@ -138,24 +111,45 @@ func TestUnregisterListener(t *testing.T) {
 
 	//attach listeners
 	//note: do not attach more than maxListenersCount
-	gE.AttachListener(testGameID, testChannel1)
-	gE.AttachListener(testGameID, testChannel2)
-
-	//ensure an error when gameID is invalid
-	invalidGameID := "12345"
-	err := gE.UnregisterListener(invalidGameID, testChannel2)
-	if err == nil {
-		t.Errorf("UnregisterListener expected game not found error, got nil")
-	}
+	gE.attachListener(&testGame, testChannel1)
+	gE.attachListener(&testGame, testChannel2)
 
 	//remove second listener
-	err = gE.UnregisterListener(testGameID, testChannel2)
-	if err != nil {
-		t.Errorf("UnregisterListener unexpected error %s", err)
+	gE.unregisterListener(&testGame, testChannel2)
+
+	if testGame.listeners.count != 1 {
+		t.Errorf("UnregisterListener fails, expected %d listeners after unregister, got %d", 1, testGame.listeners.count)
+	}
+}
+
+func TestUpdateTurn(t *testing.T) {
+	testGame := newgame() //first turn is o
+	gE := New(cache.New(10*time.Second, 15*time.Second))
+
+	gE.updateTurn(&testGame)
+	if testGame.state.Turn != "x" {
+		t.Errorf("updateTurn does not update turn in game state")
 	}
 
-	g, _ := gE.getGame(testGameID)
-	if g.listeners.count != 1 {
-		t.Errorf("UnregisterListener fails, expected %d listeners after unregister, got %d", 1, g.listeners.count)
+	gE.updateTurn(&testGame)
+	if testGame.state.Turn != "o" {
+		t.Errorf("updateTurn does not update turn in game state")
+	}
+}
+
+func TestNewRound(t *testing.T) {
+	testGameID := "ABCDE"
+	testDb := cache.New(10*time.Second, 15*time.Second)
+	gE := New(testDb)
+	testGame := newgame()
+	testGame.id = testGameID
+
+	//play something
+	testGame.state.Board[0][0] = "x"
+
+	gE.newRound(&testGame)
+
+	if testGame.state.Board != [3][3]string{} {
+		t.Errorf("newRound, expected board to be reset, it is not")
 	}
 }

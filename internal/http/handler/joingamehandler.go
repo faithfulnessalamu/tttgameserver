@@ -1,10 +1,9 @@
 package handler
 
 import (
-	"fmt"
+	"encoding/json"
 	"log"
 	"net/http"
-	"strings"
 
 	"github.com/gorilla/websocket"
 	"github.com/patrickmn/go-cache"
@@ -16,10 +15,12 @@ type JoinGameHandler struct {
 	gE       engine.GameEngine
 	upgrader websocket.Upgrader
 	conn     *websocket.Conn
+	gameID   string
+	avatar   string
 }
 
-//NewJoinGameHandler creates a new JoinGameHandler
-func NewJoinGameHandler(db *cache.Cache) JoinGameHandler {
+//GetJoinGameHandler creates a new JoinGameHandler
+func GetJoinGameHandler(db *cache.Cache) JoinGameHandler {
 	return JoinGameHandler{
 		gE: engine.New(db),
 		upgrader: websocket.Upgrader{
@@ -42,14 +43,19 @@ func (jh JoinGameHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer jh.conn.Close()
 
 	//register this player in the game engine
-	c := make(chan engine.GameState)
-	err = jh.gE.AttachListener(gameID, c) //game engine should use this channel to send updates
+	c := make(chan engine.GameState) //game engine should use this channel to send updates
+	player, err := jh.gE.NewPlayer(gameID, c)
 	if err != nil {
 		log.Println(err)
 		jh.writeString(err.Error()) //write error string to conn
 		return                      //we can't go on
 	}
-	defer jh.gE.UnregisterListener(gameID, c) //unregister listener when client disconnects
+	defer jh.gE.RemovePlayer(gameID, player, c) //unregister when player disconnects
+
+	//TODO: deliver the gameID and Player Avatar
+	jh.gameID = gameID
+	jh.avatar = player.Avatar
+	//nh.writeString(gameID)
 
 	done := jh.readMoves() //handle player actions
 	for {                  //listen for dispatch or client disconnection
@@ -57,7 +63,7 @@ func (jh JoinGameHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		case gameState := <-c:
 			conn.WriteJSON(gameState) //handle dispatch
 		case <-done:
-			log.Println("player disconnected")
+			log.Println("handler.JoinGame player disconnected")
 			return
 		}
 	}
@@ -73,7 +79,19 @@ func (jh JoinGameHandler) readMoves() chan int {
 				done <- 1
 				break
 			}
-			fmt.Println(strings.TrimSpace(string(p)))
+			//handle move
+			var m engine.Move
+			err = json.Unmarshal(p, &m)
+			if err != nil {
+				log.Printf("handler.readMoves %s", err)
+				continue
+			}
+			//try to do move
+			err = jh.gE.MakeMove(jh.gameID, jh.avatar, m)
+			if err != nil {
+				log.Printf("handler.readMoves %s", err)
+				jh.writeString(err.Error())
+			}
 		}
 	}()
 	return done //return done while the goroutine above is running
