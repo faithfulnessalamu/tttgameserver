@@ -31,7 +31,7 @@ func main() {
 	router := mux.NewRouter()
 	router.HandleFunc("/", handler.HomeHandler)
 	router.Handle("/ws/newgame", handler.GetNewGameHandler(db))
-	router.Handle("/ws/joingame", handler.NewJoinGameHandler(db))
+	router.Handle("/ws/joingame", handler.GetJoinGameHandler(db))
 	serverEnv.Handler = router
 
 	ctx, cancel := signalcontext.OnInterrupt()

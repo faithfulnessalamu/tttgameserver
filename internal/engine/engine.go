@@ -9,11 +9,11 @@ import (
 var (
 	//ErrGameNotFound is returned when game requested is not in db
 	ErrGameNotFound = fmt.Errorf("Game with that ID does not exist")
-	//ErrNoMorePlayers is returned when trying to attach after reaching maxListenerCount
+	//ErrNoMorePlayers is returned when trying to add players after reaching maxListenerCount
 	ErrNoMorePlayers = fmt.Errorf("No more players allowed")
 )
 
-//GameEngine handles game logic
+//GameEngine handles game states
 type GameEngine struct {
 	db *cache.Cache
 }
@@ -46,7 +46,6 @@ func (gE GameEngine) NewPlayer(gameID string, c chan GameState) (Player, error) 
 
 	//there is at least one slot available, get a new player
 	player := newPlayer()
-	player.Active = true
 	// add player to game
 	//get an avatar from the pool
 	player.Avatar = game.nextAvatar()

@@ -18,8 +18,8 @@ type JoinGameHandler struct {
 	conn     *websocket.Conn
 }
 
-//NewJoinGameHandler creates a new JoinGameHandler
-func NewJoinGameHandler(db *cache.Cache) JoinGameHandler {
+//GetJoinGameHandler creates a new JoinGameHandler
+func GetJoinGameHandler(db *cache.Cache) JoinGameHandler {
 	return JoinGameHandler{
 		gE: engine.New(db),
 		upgrader: websocket.Upgrader{
