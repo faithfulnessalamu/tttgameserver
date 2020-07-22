@@ -75,7 +75,7 @@ func (jh JoinGameHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	player, err := jh.gE.NewPlayer(gameID, c)
 	if err != nil {
 		jh.logger.Info("Error joining game",
-			zap.String("gameID", jh.gameID),
+			zap.String("gameID", gameID),
 			zap.String("err", err.Error()),
 		)
 		jh.writeString(err.Error()) //write error string to conn
