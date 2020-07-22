@@ -1,6 +1,8 @@
 package engine
 
-import "github.com/dchest/uniuri"
+import (
+	"github.com/dchest/uniuri"
+)
 
 const maxListenersCount = 2
 const defaultMaxScore = 3
@@ -35,8 +37,10 @@ func (g *game) returnAvatar(avt string) {
 
 func (g *game) nextAvatar() string {
 	l := len(g.avatarPool)
-	nAv := g.avatarPool[l-1]
-	g.avatarPool = g.avatarPool[:l]
+	highIndex := l - 1
+	nAv := g.avatarPool[highIndex]
+	//remove this avatar from the pool
+	g.avatarPool = append(g.avatarPool[:highIndex], g.avatarPool[highIndex+1:]...)
 	return nAv
 }
 

@@ -42,17 +42,19 @@ func (nh NewGameHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	nh.conn = conn
 	defer nh.conn.Close()
 
-	//deliver the gameID
-	nh.writeString(gameID)
 	//register this player in the game engine
-	c := make(chan engine.GameState)
-	err = nh.gE.AttachListener(gameID, c) //game engine should use this channel to send updates
-	if err != nil {                       //no more players are allowed
+	c := make(chan engine.GameState) //game engine should use this channel to send updates
+	//new player
+	player, err := nh.gE.NewPlayer(gameID, c)
+	if err != nil {
 		//There should not be any error, this is the game creator
 		log.Printf("handler.NewGame INVALID STATE: This is the game creator but %s", err)
 		return
 	}
-	defer nh.gE.UnregisterListener(gameID, c) //unregister listener when client disconnects
+	defer nh.gE.RemovePlayer(gameID, player, c) //unregister when player disconnects
+
+	//TODO: deliver the gameID and Player Avatar
+	nh.writeString(gameID)
 
 	done := nh.readMoves() //handle player actions
 	for {                  //listen for dispatch or client disconnection

@@ -39,7 +39,7 @@ func (gE GameEngine) NewPlayer(gameID string, c chan GameState) (Player, error) 
 	if err != nil {
 		return Player{}, err
 	}
-	//Check  if the slots are filled
+	//Check if the slots are filled
 	if game.listeners.count == maxListenersCount {
 		return Player{}, ErrNoMorePlayers
 	}
