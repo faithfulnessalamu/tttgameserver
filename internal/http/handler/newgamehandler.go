@@ -36,7 +36,7 @@ func (nh NewGameHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	//init logger
 	logger, err := zap.NewProduction()
 	if err != nil {
-		log.Println("Can't initialize zap logger: %v", err)
+		log.Printf("Can't initialize zap logger: %v", err)
 		return
 	}
 	nh.logger = logger

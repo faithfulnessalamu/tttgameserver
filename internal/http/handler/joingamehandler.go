@@ -36,7 +36,7 @@ func (jh JoinGameHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	//create logger
 	logger, err := zap.NewProduction()
 	if err != nil {
-		log.Println("Can't initialize zap logger: %v", err)
+		log.Printf("Can't initialize zap logger: %v", err)
 		return
 	}
 	jh.logger = logger
