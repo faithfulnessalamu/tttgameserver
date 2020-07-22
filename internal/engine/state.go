@@ -10,6 +10,6 @@ type GameState struct {
 
 //Data holds current game data
 type Data struct {
-	MaxScore int      `json:"maxScore`
+	MaxScore int      `json:"maxScore"`
 	Players  []Player `json:"players"`
 }

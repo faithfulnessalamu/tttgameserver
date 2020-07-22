@@ -67,7 +67,7 @@ Here is a sample of a game state:
 
 ## Making Moves
 The game server does the talking for the most part of a game session. The only time the game server expects communication from the client is when a player makes a 'move'.
-A tic-tac-toe board can be sufficiently represented as a 3 by 3 matrix, a 'move' should therefore, send the row and column the player wants to mark as theirs.
+A tic-tac-toe board can be sufficiently represented as a 3 by 3 matrix, a 'move' should therefore send the row and column the player wants to mark as theirs.
 Here is a sample of a move:
 ```JSON
 {
