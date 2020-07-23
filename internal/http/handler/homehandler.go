@@ -7,5 +7,5 @@ import (
 
 //HomeHandler handles the default path
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "TTTGameServer")
+	fmt.Fprintln(w, "Nothing to see here")
 }

@@ -24,7 +24,7 @@ func TestHomeHandler(t *testing.T) {
 		t.Errorf("Bad status code, got: %v, want: %v", rr.Code, http.StatusOK)
 	}
 	data := rr.Body.String()
-	if data != "TTTGameServer\n" {
-		t.Errorf("Unexpected response, got: %v, want %v", data, "TTTGameServer\n")
+	if data != "Nothing to see here\n" {
+		t.Errorf("Unexpected response, got: %v, want %v", data, "Nothing to see here\n")
 	}
 }
